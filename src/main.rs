@@ -7,7 +7,9 @@ use std::io;
 fn print_usage() {
     println!("Herdr Theme Switcher");
     println!("Usage:");
-    println!("  herdr_theme-switcher [picker]               Open interactive theme picker popup");
+    println!("  herdr_theme-switcher [picker]               Open interactive theme manager TUI (Themes tab)");
+    println!("  herdr_theme-switcher settings [--tui|--path] Display or configure settings (interactive TUI form)");
+    println!("  herdr_theme-switcher settings-tui            Open interactive settings configuration form directly");
     println!("  herdr_theme-switcher apply <theme>           Apply specific theme directly");
     println!("  herdr_theme-switcher toggle                  Toggle between light and dark counterpart");
     println!("  herdr_theme-switcher circadian [--force]     Sync theme to current solar elevation");
@@ -26,7 +28,9 @@ fn main() -> io::Result<()> {
     let command = args.get(1).map(|s| s.as_str()).unwrap_or("picker");
 
     match command {
-        "picker" | "popup" => slices::picker::run_popup()?,
+        "picker" | "popup" => slices::picker::run_popup(slices::picker::state::ActiveTab::Themes)?,
+        "settings-tui" | "config-tui" => slices::picker::run_popup(slices::picker::state::ActiveTab::Settings)?,
+        "solar-tui" => slices::picker::run_popup(slices::picker::state::ActiveTab::Solar)?,
         "apply" | "set" => {
             if let Some(theme_name) = args.get(2) {
                 slices::apply::run_apply(theme_name)?;
@@ -72,6 +76,10 @@ fn main() -> io::Result<()> {
         "list" => slices::apply::run_list()?,
         "current" => slices::apply::run_current()?,
         "settings" | "config" => {
+            if args.iter().any(|a| a == "--tui" || a == "-t") {
+                slices::picker::run_popup(slices::picker::state::ActiveTab::Settings)?;
+                return Ok(());
+            }
             let path = shared::PluginSettings::settings_path();
             if args.iter().any(|a| a == "--path" || a == "-p") {
                 println!("{}", path.display());

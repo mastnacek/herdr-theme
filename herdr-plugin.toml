@@ -29,9 +29,27 @@ platforms = ["linux", "macos"]
 id = "picker-win"
 title = "Herdr Theme Switcher"
 placement = "popup"
-width = "75%"
-height = 20
+width = "85%"
+height = 24
 command = ["target/release/herdr_theme-switcher.exe", "picker"]
+platforms = ["windows"]
+
+[[panes]]
+id = "settings"
+title = "Herdr Theme Settings"
+placement = "popup"
+width = "85%"
+height = 24
+command = ["target/release/herdr_theme-switcher", "settings-tui"]
+platforms = ["linux", "macos"]
+
+[[panes]]
+id = "settings-win"
+title = "Herdr Theme Settings"
+placement = "popup"
+width = "85%"
+height = 24
+command = ["target/release/herdr_theme-switcher.exe", "settings-tui"]
 platforms = ["windows"]
 
 [[actions]]
@@ -74,6 +92,13 @@ id = "settings-win"
 title = "Show Theme Switcher Settings"
 contexts = ["workspace"]
 command = ["target/release/herdr_theme-switcher.exe", "settings"]
+platforms = ["windows"]
+
+[[actions]]
+id = "settings-tui-win"
+title = "Configure Theme Settings (TUI)"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher.exe", "settings-tui"]
 platforms = ["windows"]
 
 [[actions]]

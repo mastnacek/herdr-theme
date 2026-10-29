@@ -1,13 +1,14 @@
-use crate::slices::picker::state::PickerState;
-use crate::shared::theme::ThemeMode;
+use crate::slices::picker::state::{ActiveTab, PickerState};
+use crate::slices::picker::ui_settings::render_settings;
+use crate::slices::picker::ui_solar::render_solar;
+use crate::slices::picker::ui_themes::render_themes;
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Style},
     text::{Line, Span},
-    widgets::{Block, Clear, List, ListItem, Paragraph},
+    widgets::{Block, Clear, Paragraph},
     Frame,
 };
-use std::str::FromStr;
 
 pub fn render(frame: &mut Frame, state: &PickerState) {
     let area = frame.area();
@@ -16,7 +17,7 @@ pub fn render(frame: &mut Frame, state: &PickerState) {
     frame.render_widget(Clear, area);
 
     let main_block = Block::bordered()
-        .title(" Herdr Theme Switcher ")
+        .title(" Herdr Theme & Environment Manager ")
         .title_style(Style::default().fg(Color::Cyan).bold())
         .border_style(Style::default().fg(Color::DarkGray));
 
@@ -26,177 +27,77 @@ pub fn render(frame: &mut Frame, state: &PickerState) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(1), // Sub-header / status
-            Constraint::Min(8),    // Main list & details
-            Constraint::Length(2), // Footer
+            Constraint::Length(1), // Tab Bar
+            Constraint::Min(8),    // Active Tab Content
+            Constraint::Length(1), // Footer Shortcuts
         ])
         .split(inner);
 
-    // 1. Header Row
-    let active_str = state
-        .active_applied_name
-        .as_deref()
-        .unwrap_or("None (Default)");
-
-    let header_line = Line::from(vec![
-        Span::raw(" Active: "),
-        Span::styled(active_str, Style::default().fg(Color::Green).bold()),
-        Span::raw("   |   Filter: "),
-        Span::styled(
-            state.filter_mode.label(),
-            Style::default().fg(Color::Yellow).bold(),
-        ),
-        Span::raw(" (Press Tab to cycle)"),
-    ]);
-    frame.render_widget(Paragraph::new(header_line), chunks[0]);
-
-    // 2. Middle Body: Left (List) & Right (Preview Details)
-    let body_chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(46), Constraint::Percentage(54)])
-        .split(chunks[1]);
-
-    // Left: Theme List
-    let items: Vec<ListItem> = state
-        .filtered_themes
-        .iter()
-        .enumerate()
-        .map(|(i, t)| {
-            let is_selected = i == state.selected_index;
-            let is_active = state.active_applied_name.as_deref() == Some(t.name);
-
-            let mode_badge = match t.mode {
-                ThemeMode::Dark => Span::styled(" [D] ", Style::default().fg(Color::Blue)),
-                ThemeMode::Light => Span::styled(" [L] ", Style::default().fg(Color::Yellow)),
-            };
-
-            let prefix = if is_selected { "▶ " } else { "  " };
-
-            let name_style = if is_selected {
-                Style::default().fg(Color::White).bold()
-            } else {
-                Style::default().fg(Color::Gray)
-            };
-
-            let mut spans = vec![
-                Span::styled(prefix, Style::default().fg(Color::Cyan).bold()),
-                mode_badge,
-                Span::styled(t.display_name, name_style),
-            ];
-
-            if is_active {
-                spans.push(Span::styled(" ★", Style::default().fg(Color::Green).bold()));
-            }
-
-            if let Some(slot) = t.circadian_slot {
-                spans.push(Span::styled(
-                    format!(" ({})", slot),
-                    Style::default().fg(Color::Magenta).italic(),
-                ));
-            }
-
-            let item_style = if is_selected {
-                Style::default().bg(Color::Rgb(40, 44, 52))
-            } else {
-                Style::default()
-            };
-
-            ListItem::new(Line::from(spans)).style(item_style)
-        })
-        .collect();
-
-    let list_block = Block::bordered()
-        .title(" Available Themes ")
-        .border_style(Style::default().fg(Color::DarkGray));
-    let list_widget = List::new(items).block(list_block);
-    frame.render_widget(list_widget, body_chunks[0]);
-
-    // Right: Preview & Details
-    let preview_block = Block::bordered()
-        .title(" Palette & Preview ")
-        .border_style(Style::default().fg(Color::DarkGray));
-
-    let preview_inner = preview_block.inner(body_chunks[1]);
-    frame.render_widget(preview_block, body_chunks[1]);
-
-    if let Some(theme) = state.current_selected() {
-        let accent_color = Color::from_str(theme.accent_hex).unwrap_or(Color::Cyan);
-        let bg_color = Color::from_str(theme.bg_hex).unwrap_or(Color::Black);
-        let fg_color = Color::from_str(theme.fg_hex).unwrap_or(Color::White);
-        let sidebar_color = Color::from_str(theme.sidebar_bg).unwrap_or(Color::DarkGray);
-
-        let details = vec![
-            Line::from(vec![
-                Span::styled(theme.display_name, Style::default().fg(accent_color).bold()),
-                Span::raw(format!("  ({})", theme.name)),
-            ]),
-            Line::from(vec![
-                Span::raw("Mode: "),
-                Span::styled(
-                    match theme.mode {
-                        ThemeMode::Dark => "Dark Palette",
-                        ThemeMode::Light => "Light Palette",
-                    },
-                    Style::default().bold(),
-                ),
-                Span::raw(if let Some(s) = theme.circadian_slot {
-                    format!("  |  Circadian Slot: {}", s.to_uppercase())
-                } else {
-                    String::new()
-                }),
-            ]),
-            Line::raw(""),
-            Line::from(vec![
-                Span::raw("Background:  "),
-                Span::styled("   ", Style::default().bg(bg_color)),
-                Span::raw(format!(" {}", theme.bg_hex)),
-            ]),
-            Line::from(vec![
-                Span::raw("Foreground:  "),
-                Span::styled("   ", Style::default().bg(fg_color)),
-                Span::raw(format!(" {}", theme.fg_hex)),
-            ]),
-            Line::from(vec![
-                Span::raw("Sidebar BG:  "),
-                Span::styled("   ", Style::default().bg(sidebar_color)),
-                Span::raw(format!(" {}", theme.sidebar_bg)),
-            ]),
-            Line::from(vec![
-                Span::raw("Accent Color:"),
-                Span::styled("   ", Style::default().bg(accent_color)),
-                Span::raw(format!(" {}", theme.accent_hex)),
-            ]),
-            Line::raw(""),
-            // Simulated Mini Window
-            Line::from(vec![
-                Span::styled(" [Sidebar] ", Style::default().bg(sidebar_color).fg(fg_color)),
-                Span::styled(" [Terminal Pane Content] ", Style::default().bg(bg_color).fg(fg_color)),
-            ]),
-        ];
-
-        frame.render_widget(Paragraph::new(details), preview_inner);
-    }
-
-    // 3. Footer Row
-    let footer_line = if let Some(ref msg) = state.status_message {
-        Line::from(vec![
-            Span::styled("✓ ", Style::default().fg(Color::Green).bold()),
-            Span::styled(msg, Style::default().fg(Color::Green).bold()),
-        ])
-    } else {
-        Line::from(vec![
-            Span::styled("[↑/↓/j/k]", Style::default().fg(Color::Yellow).bold()),
-            Span::raw(" Move  "),
-            Span::styled("[Enter]", Style::default().fg(Color::Green).bold()),
-            Span::raw(" Apply  "),
-            Span::styled("[Tab]", Style::default().fg(Color::Cyan).bold()),
-            Span::raw(" Filter  "),
-            Span::styled("[c]", Style::default().fg(Color::Magenta).bold()),
-            Span::raw(" Circadian  "),
-            Span::styled("[q/Esc]", Style::default().fg(Color::Red).bold()),
-            Span::raw(" Close"),
-        ])
+    // 1. Tab Bar
+    let render_tab = |tab: ActiveTab, label: &str| -> Span<'static> {
+        if state.active_tab == tab {
+            Span::styled(format!(" [ {} ] ", label), Style::default().fg(Color::Black).bg(Color::Cyan).bold())
+        } else {
+            Span::styled(format!("   {}   ", label), Style::default().fg(Color::Gray))
+        }
     };
 
-    frame.render_widget(Paragraph::new(footer_line), chunks[2]);
+    let tab_line = Line::from(vec![
+        Span::raw(" Tabs: "),
+        render_tab(ActiveTab::Themes, "1: Themes"),
+        Span::raw(" "),
+        render_tab(ActiveTab::Settings, "2: Settings"),
+        Span::raw(" "),
+        render_tab(ActiveTab::Solar, "3: Solar Clock"),
+        Span::raw("    (Press 1/2/3 or Tab)"),
+    ]);
+    frame.render_widget(Paragraph::new(tab_line), chunks[0]);
+
+    // 2. Active Tab Content
+    match state.active_tab {
+        ActiveTab::Themes => render_themes(frame, chunks[1], state),
+        ActiveTab::Settings => render_settings(frame, chunks[1], &state.settings_state),
+        ActiveTab::Solar => render_solar(frame, chunks[1], &state.solar_state),
+    }
+
+    // 3. Footer Shortcuts
+    let footer_spans = match state.active_tab {
+        ActiveTab::Themes => vec![
+            Span::styled(" [↑/↓/j/k] ", Style::default().fg(Color::Yellow)),
+            Span::raw("Select  "),
+            Span::styled(" [Enter] ", Style::default().fg(Color::Green)),
+            Span::raw("Apply  "),
+            Span::styled(" [f] ", Style::default().fg(Color::Cyan)),
+            Span::raw("Filter  "),
+            Span::styled(" [c] ", Style::default().fg(Color::Magenta)),
+            Span::raw("Sync Circadian  "),
+            Span::styled(" [Tab] ", Style::default().fg(Color::White)),
+            Span::raw("Next Tab  "),
+            Span::styled(" [q/Esc] ", Style::default().fg(Color::Red)),
+            Span::raw("Quit"),
+        ],
+        ActiveTab::Settings => vec![
+            Span::styled(" [↑/↓/j/k] ", Style::default().fg(Color::Yellow)),
+            Span::raw("Navigate  "),
+            Span::styled(" [←/→/h/l] ", Style::default().fg(Color::Cyan)),
+            Span::raw("Change Value  "),
+            Span::styled(" [Space/Enter] ", Style::default().fg(Color::Green)),
+            Span::raw("Toggle  "),
+            Span::styled(" [s] ", Style::default().fg(Color::Green).bold()),
+            Span::raw("Save  "),
+            Span::styled(" [r] ", Style::default().fg(Color::Magenta)),
+            Span::raw("Resync Now  "),
+            Span::styled(" [q/Esc] ", Style::default().fg(Color::Red)),
+            Span::raw("Quit"),
+        ],
+        ActiveTab::Solar => vec![
+            Span::styled(" [r] ", Style::default().fg(Color::Magenta)),
+            Span::raw("Resync Circadian Now  "),
+            Span::styled(" [Tab] ", Style::default().fg(Color::White)),
+            Span::raw("Next Tab  "),
+            Span::styled(" [q/Esc] ", Style::default().fg(Color::Red)),
+            Span::raw("Quit"),
+        ],
+    };
+    frame.render_widget(Paragraph::new(Line::from(footer_spans)), chunks[2]);
 }

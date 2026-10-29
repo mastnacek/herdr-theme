@@ -21,35 +21,69 @@ This plugin follows Vertical Slice Architecture (VSA) in Rust and Ratatui:
 When invoking the compiled binary directly (`herdr_theme-switcher` / `herdr_theme-switcher.exe`):
 
 ```bash
-# 1. Interactive Ratatui popup theme picker
+# 1. Interactive Ratatui manager TUI (Tab 1: Themes, Tab 2: Settings, Tab 3: Solar Clock)
 herdr_theme-switcher picker
 
-# 2. Directly apply a specific theme
+# 2. Interactive settings configuration form directly
+herdr_theme-switcher settings --tui
+# or: herdr_theme-switcher settings-tui
+
+# 3. Directly apply a specific theme
 herdr_theme-switcher apply <theme-name>
 # Examples:
 # herdr_theme-switcher apply solarized-light
 # herdr_theme-switcher apply catppuccin
 
-# 3. Toggle between dark and light counterparts
+# 4. Toggle between dark and light counterparts
 herdr_theme-switcher toggle
 
-# 4. Sync theme to current solar elevation (NOAA astronomical phase)
+# 5. Sync theme to current solar elevation (NOAA astronomical phase)
 herdr_theme-switcher circadian [--force]
 
-# 5. Continuous background watcher (monitors and auto-switches theme when phase changes)
+# 6. Continuous background watcher (monitors and auto-switches theme when phase changes)
 herdr_theme-switcher watch [--interval 60]
 
-# 6. View or inspect plugin settings and configuration file path
+# 7. Start/stop background daemon process (detached, no window)
+herdr_theme-switcher start-daemon
+herdr_theme-switcher stop-daemon
+herdr_theme-switcher status-daemon
+
+# 8. View or inspect plugin settings and configuration file path
 herdr_theme-switcher settings [--path]
 
-# 7. List all 18 supported themes with mode and hex colors
+# 9. List all 18 supported themes with mode and hex colors
 herdr_theme-switcher list
 
-# 7. Display currently configured theme
+# 10. Display currently configured theme
 herdr_theme-switcher current
 
-# 8. Reset terminal skin to profile defaults
+# 11. Reset terminal skin to profile defaults
 herdr_theme-switcher reset-skin
+```
+
+## Interactive Full-Featured TUI (`picker` / `settings-tui`)
+
+The interactive Ratatui TUI features 3 synchronized tabs:
+- **Tab 1: Themes (`1`)**:
+  - Live list of all 18 themes with color swatch preview cards, hex color breakdown, and simulated terminal canvas.
+  - Controls: `↑`/`↓`/`j`/`k` (select), `Enter` (apply immediately), `f` (filter all/dark/light), `c` (sync circadian).
+- **Tab 2: Settings (`2`)**:
+  - Full configuration form: customize Dawn, Day, Dusk, and Night themes from all 18 options with live swatches.
+  - Select City presets (Prague, London, Berlin, Paris, New York, San Francisco, Tokyo, Sydney) or adjust custom latitude/longitude coordinates.
+  - Set watcher cycle interval (10s, 30s, 60s, 120s, 300s, 600s).
+  - Toggle host terminal skinning (OSC 10/11) and desktop notifications.
+  - Start/stop background daemon directly from the UI.
+  - Controls: `↑`/`↓` (navigate fields), `←`/`→`/`h`/`l`/`Space` (change values/toggle), `s` / `Enter` (save to `settings.toml`), `r` (resync theme now).
+- **Tab 3: Solar Clock (`3`)**:
+  - Real-time astronomical ephemeris: UTC/Local time, observer position, exact NOAA sun elevation angle in degrees, current phase, and ASCII horizon gauge.
+
+Open inside Herdr as a floating popup:
+```bash
+# Open theme picker popup:
+herdr plugin pane open --plugin herdr.theme-switcher --entrypoint picker-win
+
+# Open settings configuration popup:
+herdr plugin pane open --plugin herdr.theme-switcher --entrypoint settings-win
 ```
 
 ## Configuration Settings
