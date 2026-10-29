@@ -15,6 +15,7 @@ fn print_usage() {
     println!("  herdr_theme-switcher start-daemon            Launch background watcher daemon (detached)");
     println!("  herdr_theme-switcher stop-daemon             Stop running background watcher daemon");
     println!("  herdr_theme-switcher status-daemon           Check background watcher daemon status");
+    println!("  herdr_theme-switcher settings [--path]       Display current plugin settings and config path");
     println!("  herdr_theme-switcher list                    List all supported themes with hex colors");
     println!("  herdr_theme-switcher current                 Display current theme from config");
     println!("  herdr_theme-switcher reset-skin              Reset terminal background/text colors");
@@ -70,6 +71,27 @@ fn main() -> io::Result<()> {
         }
         "list" => slices::apply::run_list()?,
         "current" => slices::apply::run_current()?,
+        "settings" | "config" => {
+            let path = shared::PluginSettings::settings_path();
+            if args.iter().any(|a| a == "--path" || a == "-p") {
+                println!("{}", path.display());
+            } else {
+                let s = shared::PluginSettings::load();
+                println!("Herdr Theme Switcher Settings");
+                println!("File: {}", path.display());
+                println!("-----------------------------------------------------");
+                println!("Location:       {:.4}°N, {:.4}°E", s.location.latitude, s.location.longitude);
+                println!("Daemon Watch:   every {}s", s.daemon.interval_seconds);
+                println!("Circadian Slot Themes:");
+                println!("  Dawn:         {}", s.circadian.dawn);
+                println!("  Day:          {}", s.circadian.day);
+                println!("  Dusk:         {}", s.circadian.dusk);
+                println!("  Night:        {}", s.circadian.night);
+                println!("Terminal Features:");
+                println!("  Skin (OSC):   {}", if s.terminal.skin_terminal { "enabled" } else { "disabled" });
+                println!("  Notify:       {}", if s.terminal.notify { "enabled" } else { "disabled" });
+            }
+        }
         "reset-skin" => {
             shared::terminal::reset_terminal_skin()?;
             println!("Terminal skin reset to profile defaults.");

@@ -70,6 +70,13 @@ command = ["target/release/herdr_theme-switcher", "list"]
 platforms = ["linux", "macos"]
 
 [[actions]]
+id = "settings-win"
+title = "Show Theme Switcher Settings"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher.exe", "settings"]
+platforms = ["windows"]
+
+[[actions]]
 id = "list-win"
 title = "List Supported Themes"
 contexts = ["workspace"]

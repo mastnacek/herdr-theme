@@ -39,7 +39,10 @@ herdr_theme-switcher circadian [--force]
 # 5. Continuous background watcher (monitors and auto-switches theme when phase changes)
 herdr_theme-switcher watch [--interval 60]
 
-# 6. List all 18 supported themes with mode and hex colors
+# 6. View or inspect plugin settings and configuration file path
+herdr_theme-switcher settings [--path]
+
+# 7. List all 18 supported themes with mode and hex colors
 herdr_theme-switcher list
 
 # 7. Display currently configured theme
@@ -47,6 +50,41 @@ herdr_theme-switcher current
 
 # 8. Reset terminal skin to profile defaults
 herdr_theme-switcher reset-skin
+```
+
+## Configuration Settings
+
+The plugin automatically creates and manages its own persistent configuration file in Herdr's plugin config directory:
+- **Windows**: `%APPDATA%\herdr\plugins\config\herdr.theme-switcher\settings.toml`
+- **Linux/macOS**: `~/.config/herdr/plugins/config/herdr.theme-switcher/settings.toml`
+
+### Settings schema (`settings.toml`)
+
+```toml
+[location]
+# Latitude and Longitude for NOAA solar elevation calculations
+# Default: Prague, Czech Republic
+latitude = 50.0755
+longitude = 14.4378
+
+[circadian]
+# Customizable theme assigned to each solar phase
+# Choose any of the 18 themes from 'herdr_theme-switcher list'
+dawn = "gruvbox"           # -12° to -0.83° (rising sun)
+day = "solarized-light"    # > -0.83° (sun above horizon)
+dusk = "catppuccin"        # -0.83° to -12° (setting sun)
+night = "rose-pine"        # < -12° (astronomical night)
+
+[daemon]
+# Monitoring frequency in seconds
+interval_seconds = 60
+
+[terminal]
+# Automatically send OSC 10/11 escape sequences to skin host terminal
+skin_terminal = true
+
+# Show desktop notification on automatic theme change
+notify = true
 ```
 
 ## Automated Monitoring Mechanisms
