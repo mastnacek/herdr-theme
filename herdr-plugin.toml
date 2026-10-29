@@ -9,11 +9,11 @@ platforms = ["linux", "macos", "windows"]
 command = ["cargo", "build", "--release"]
 
 [[startup]]
-command = ["target/release/herdr_theme-switcher", "circadian"]
+command = ["target/release/herdr_theme-switcher", "start-daemon"]
 platforms = ["linux", "macos"]
 
 [[startup]]
-command = ["target/release/herdr_theme-switcher.exe", "circadian"]
+command = ["target/release/herdr_theme-switcher.exe", "start-daemon"]
 platforms = ["windows"]
 
 [[panes]]
@@ -74,6 +74,20 @@ id = "list-win"
 title = "List Supported Themes"
 contexts = ["workspace"]
 command = ["target/release/herdr_theme-switcher.exe", "list"]
+platforms = ["windows"]
+
+[[actions]]
+id = "start-daemon-win"
+title = "Start Theme Watcher Daemon"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher.exe", "start-daemon"]
+platforms = ["windows"]
+
+[[actions]]
+id = "stop-daemon-win"
+title = "Stop Theme Watcher Daemon"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher.exe", "stop-daemon"]
 platforms = ["windows"]
 
 [[events]]
