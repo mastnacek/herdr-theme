@@ -1,0 +1,77 @@
+id = "herdr.theme-switcher"
+name = "Herdr Theme Switcher"
+version = "0.1.0"
+min_herdr_version = "0.7.0"
+description = "Terminal theme and skin switcher for Herdr multiplexer with Ratatui UI, OSC 10/11 sync, and circadian rotation"
+platforms = ["linux", "macos", "windows"]
+
+[[build]]
+command = ["cargo", "build", "--release"]
+
+[[startup]]
+command = ["target/release/herdr_theme-switcher", "circadian"]
+platforms = ["linux", "macos"]
+
+[[startup]]
+command = ["target/release/herdr_theme-switcher.exe", "circadian"]
+platforms = ["windows"]
+
+[[panes]]
+id = "picker"
+title = "Herdr Theme Switcher"
+placement = "popup"
+width = "75%"
+height = 20
+command = ["target/release/herdr_theme-switcher", "picker"]
+platforms = ["linux", "macos"]
+
+[[panes]]
+id = "picker-win"
+title = "Herdr Theme Switcher"
+placement = "popup"
+width = "75%"
+height = 20
+command = ["target/release/herdr_theme-switcher.exe", "picker"]
+platforms = ["windows"]
+
+[[actions]]
+id = "toggle"
+title = "Toggle Light/Dark Theme"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher", "toggle"]
+platforms = ["linux", "macos"]
+
+[[actions]]
+id = "toggle-win"
+title = "Toggle Light/Dark Theme"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher.exe", "toggle"]
+platforms = ["windows"]
+
+[[actions]]
+id = "circadian"
+title = "Sync Circadian Theme"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher", "circadian"]
+platforms = ["linux", "macos"]
+
+[[actions]]
+id = "circadian-win"
+title = "Sync Circadian Theme"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher.exe", "circadian"]
+platforms = ["windows"]
+
+[[actions]]
+id = "list"
+title = "List Supported Themes"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher", "list"]
+platforms = ["linux", "macos"]
+
+[[actions]]
+id = "list-win"
+title = "List Supported Themes"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher.exe", "list"]
+platforms = ["windows"]
