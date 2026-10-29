@@ -44,7 +44,7 @@ pub fn run_popup() -> io::Result<()> {
                         let _ = state.apply_current();
                     }
                     KeyCode::Char('c') => {
-                        let _ = crate::slices::circadian::run_circadian();
+                        let _ = crate::slices::circadian::run_circadian(true);
                         let active = crate::shared::config::read_current_theme(
                             &crate::shared::config::default_herdr_config_path(),
                         );

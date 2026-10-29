@@ -75,3 +75,24 @@ title = "List Supported Themes"
 contexts = ["workspace"]
 command = ["target/release/herdr_theme-switcher.exe", "list"]
 platforms = ["windows"]
+
+[[events]]
+on = "tab.created"
+command = ["target/release/herdr_theme-switcher", "circadian"]
+platforms = ["linux", "macos"]
+
+[[events]]
+on = "tab.created"
+command = ["target/release/herdr_theme-switcher.exe", "circadian"]
+platforms = ["windows"]
+
+[[events]]
+on = "pane.created"
+command = ["target/release/herdr_theme-switcher", "circadian"]
+platforms = ["linux", "macos"]
+
+[[events]]
+on = "pane.created"
+command = ["target/release/herdr_theme-switcher.exe", "circadian"]
+platforms = ["windows"]
+

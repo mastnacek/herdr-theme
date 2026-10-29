@@ -34,17 +34,29 @@ herdr_theme-switcher apply <theme-name>
 herdr_theme-switcher toggle
 
 # 4. Sync theme to current solar elevation (NOAA astronomical phase)
-herdr_theme-switcher circadian
+herdr_theme-switcher circadian [--force]
 
-# 5. List all 18 supported themes with mode and hex colors
+# 5. Continuous background watcher (monitors and auto-switches theme when phase changes)
+herdr_theme-switcher watch [--interval 60]
+
+# 6. List all 18 supported themes with mode and hex colors
 herdr_theme-switcher list
 
-# 6. Display currently configured theme
+# 7. Display currently configured theme
 herdr_theme-switcher current
 
-# 7. Reset terminal skin to profile defaults
+# 8. Reset terminal skin to profile defaults
 herdr_theme-switcher reset-skin
 ```
+
+## Automated Monitoring Mechanisms
+
+1. **Continuous Daemon (`watch`)**:
+   Runs as a background daemon loop every 60s (or custom interval via `--interval <sec>`). When solar elevation crosses a threshold (Dawn, Day, Dusk, Night), it automatically updates `config.toml`, skins the host terminal via OSC 10/11, reloads Herdr server, and emits a desktop notification.
+
+2. **Event-driven via Herdr (`tab.created`, `pane.created`, `startup`)**:
+   Registered in `herdr-plugin.toml`. Whenever Herdr boots, or whenever a user opens a new tab or pane, Herdr invokes `circadian`. If the theme is already in sync with the current solar slot, it completes in <1ms without disk writes or reloads; if the phase has shifted, it immediately switches the theme.
+
 
 ## Herdr Multiplexer Integration
 

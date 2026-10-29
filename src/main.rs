@@ -7,13 +7,14 @@ use std::io;
 fn print_usage() {
     println!("Herdr Theme Switcher");
     println!("Usage:");
-    println!("  herdr_theme-switcher [picker]       Open interactive theme picker popup");
-    println!("  herdr_theme-switcher apply <theme>   Apply specific theme directly");
-    println!("  herdr_theme-switcher toggle          Toggle between light and dark counterpart");
-    println!("  herdr_theme-switcher circadian       Sync theme to current solar elevation");
-    println!("  herdr_theme-switcher list            List all supported themes with hex colors");
-    println!("  herdr_theme-switcher current         Display current theme from config");
-    println!("  herdr_theme-switcher reset-skin      Reset terminal background/text colors");
+    println!("  herdr_theme-switcher [picker]               Open interactive theme picker popup");
+    println!("  herdr_theme-switcher apply <theme>           Apply specific theme directly");
+    println!("  herdr_theme-switcher toggle                  Toggle between light and dark counterpart");
+    println!("  herdr_theme-switcher circadian [--force]     Sync theme to current solar elevation");
+    println!("  herdr_theme-switcher watch [--interval <sec>] Background daemon monitoring solar elevation");
+    println!("  herdr_theme-switcher list                    List all supported themes with hex colors");
+    println!("  herdr_theme-switcher current                 Display current theme from config");
+    println!("  herdr_theme-switcher reset-skin              Reset terminal background/text colors");
 }
 
 fn main() -> io::Result<()> {
@@ -32,7 +33,21 @@ fn main() -> io::Result<()> {
             }
         }
         "toggle" => slices::apply::run_toggle()?,
-        "circadian" => slices::circadian::run_circadian()?,
+        "circadian" => {
+            let force = args.iter().any(|a| a == "--force" || a == "-f");
+            slices::circadian::run_circadian(force)?;
+        }
+        "watch" | "daemon" => {
+            let mut interval = 60;
+            if let Some(pos) = args.iter().position(|a| a == "--interval" || a == "-i") {
+                if let Some(val) = args.get(pos + 1) {
+                    if let Ok(num) = val.parse::<u64>() {
+                        interval = num;
+                    }
+                }
+            }
+            slices::circadian::run_watch(interval)?;
+        }
         "list" => slices::apply::run_list()?,
         "current" => slices::apply::run_current()?,
         "reset-skin" => {
