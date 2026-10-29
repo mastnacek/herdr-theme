@@ -49,6 +49,16 @@ pub const ALL_THEMES: &[ThemeInfo] = &[
         circadian_slot: Some("dusk"),
     },
     ThemeInfo {
+        name: "osaka-jade",
+        display_name: "Osaka Jade",
+        mode: ThemeMode::Dark,
+        bg_hex: "#1a221e",
+        fg_hex: "#d4c8a0",
+        sidebar_bg: "#1f2a24",
+        accent_hex: "#509475",
+        circadian_slot: Some("night"),
+    },
+    ThemeInfo {
         name: "rose-pine",
         display_name: "Rosé Pine",
         mode: ThemeMode::Dark,
@@ -56,7 +66,7 @@ pub const ALL_THEMES: &[ThemeInfo] = &[
         fg_hex: "#e0def4",
         sidebar_bg: "#1f1d2e",
         accent_hex: "#ebbcba",
-        circadian_slot: Some("night"),
+        circadian_slot: None,
     },
     // Light themes
     ThemeInfo {

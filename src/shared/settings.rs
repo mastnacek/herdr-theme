@@ -51,7 +51,7 @@ fn default_dusk() -> String {
     "catppuccin".to_string()
 }
 fn default_night() -> String {
-    "rose-pine".to_string()
+    "osaka-jade".to_string()
 }
 
 impl Default for CircadianSettings {
@@ -256,9 +256,9 @@ mod tests {
         assert!((s.location.latitude - 50.0755).abs() < 0.001);
         assert!((s.location.longitude - 14.4378).abs() < 0.001);
         assert_eq!(s.circadian.day, "solarized-light");
-        assert_eq!(s.circadian.night, "rose-pine");
+        assert_eq!(s.circadian.night, "osaka-jade");
         assert_eq!(s.theme_for_phase(SolarSlot::Day), "solarized-light");
-        assert_eq!(s.theme_for_phase(SolarSlot::Night), "rose-pine");
+        assert_eq!(s.theme_for_phase(SolarSlot::Night), "osaka-jade");
         assert_eq!(s.daemon.interval_seconds, 60);
         assert!(s.terminal.skin_terminal);
         assert!(s.terminal.notify);

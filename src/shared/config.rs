@@ -47,6 +47,13 @@ pub fn read_current_theme(path: &Path) -> Option<String> {
     let content = fs::read_to_string(path).ok()?;
     let doc: DocumentMut = content.parse().ok()?;
     let theme_table = doc.get("theme")?;
+    if let Some(custom) = theme_table.get("custom") {
+        if let Some(sidebar_bg) = custom.get("sidebar_bg").and_then(|v| v.as_str()) {
+            if sidebar_bg.eq_ignore_ascii_case("#1f2a24") {
+                return Some("osaka-jade".to_string());
+            }
+        }
+    }
     let name = theme_table.get("name")?.as_str()?;
     Some(name.to_string())
 }
@@ -70,9 +77,6 @@ pub fn update_herdr_theme(path: &Path, theme: &ThemeInfo) -> io::Result<()> {
         doc["theme"] = table();
     }
 
-    // Set theme.name
-    doc["theme"]["name"] = value(theme.name);
-
     // Disable auto_switch so Herdr honors the chosen theme
     doc["theme"]["auto_switch"] = value(false);
 
@@ -83,8 +87,44 @@ pub fn update_herdr_theme(path: &Path, theme: &ThemeInfo) -> io::Result<()> {
         doc["theme"]["custom"] = table();
     }
 
-    // Set custom.sidebar_bg
-    doc["theme"]["custom"]["sidebar_bg"] = value(theme.sidebar_bg);
+    if theme.name == "osaka-jade" {
+        doc["theme"]["name"] = value("gruvbox");
+        let custom = doc["theme"]["custom"].as_table_like_mut().unwrap();
+        custom.insert("sidebar_bg", value("#1F2A24"));
+        custom.insert("active_row_bg", value("#27372F"));
+        custom.insert("selection_bg", value("#27372F"));
+        custom.insert("panel_bg", value("#1A221E"));
+        custom.insert("accent", value("#509475"));
+        custom.insert("green", value("#63b07a"));
+        custom.insert("red", value("#FF5345"));
+    } else {
+        doc["theme"]["name"] = value(theme.name);
+        let custom = doc["theme"]["custom"].as_table_like_mut().unwrap();
+        custom.insert("sidebar_bg", value(theme.sidebar_bg));
+        
+        let keys_to_remove: Vec<&'static str> = [
+            ("panel_bg", "#1A221E"),
+            ("active_row_bg", "#27372F"),
+            ("selection_bg", "#27372F"),
+            ("accent", "#509475"),
+            ("green", "#63b07a"),
+            ("red", "#FF5345"),
+        ]
+        .into_iter()
+        .filter(|(key, target)| {
+            custom
+                .get(*key)
+                .and_then(|v| v.as_str())
+                .map(|s| s.eq_ignore_ascii_case(target))
+                .unwrap_or(false)
+        })
+        .map(|(key, _)| key)
+        .collect();
+
+        for key in keys_to_remove {
+            custom.remove(key);
+        }
+    }
 
     // Write out atomically using a temporary file in the same directory
     let toml_str = doc.to_string();
@@ -147,6 +187,35 @@ accent = "#ff00ff"
         assert!(updated.contains(r##"accent = "#ff00ff""##));
         assert!(updated.contains(r##"sidebar_bg = "#181825""##));
         assert!(updated.contains("# Initial comment"));
+
+        let _ = fs::remove_dir_all(&tmp_dir);
+    }
+
+    #[test]
+    fn test_update_osaka_jade() {
+        let tmp_dir = env::temp_dir().join("herdr_theme_test_osaka");
+        let _ = fs::remove_dir_all(&tmp_dir);
+        let config_path = tmp_dir.join("config.toml");
+
+        let theme = find_theme("osaka-jade").unwrap();
+        update_herdr_theme(&config_path, theme).unwrap();
+
+        assert_eq!(read_current_theme(&config_path), Some("osaka-jade".to_string()));
+        let content = fs::read_to_string(&config_path).unwrap();
+        assert!(content.contains(r#"name = "gruvbox""#));
+        assert!(content.contains(r##"sidebar_bg = "#1F2A24""##));
+        assert!(content.contains(r##"panel_bg = "#1A221E""##));
+        assert!(content.contains(r##"accent = "#509475""##));
+
+        // Switch to solarized-light and ensure custom keys are cleaned up
+        let solarized = find_theme("solarized-light").unwrap();
+        update_herdr_theme(&config_path, solarized).unwrap();
+        assert_eq!(read_current_theme(&config_path), Some("solarized-light".to_string()));
+        let updated = fs::read_to_string(&config_path).unwrap();
+        assert!(updated.contains(r#"name = "solarized-light""#));
+        assert!(updated.contains(r##"sidebar_bg = "#eee8d5""##));
+        assert!(!updated.contains("panel_bg"));
+        assert!(!updated.contains(r##"#509475"##));
 
         let _ = fs::remove_dir_all(&tmp_dir);
     }
