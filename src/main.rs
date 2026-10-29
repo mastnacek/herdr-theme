@@ -29,6 +29,20 @@ fn main() -> io::Result<()> {
 
     match command {
         "picker" | "popup" => slices::picker::run_popup(slices::picker::state::ActiveTab::Themes)?,
+        "open-popup" => {
+            let entrypoint = if cfg!(windows) { "picker-win" } else { "picker" };
+            let client = shared::client::HerdrClient::new();
+            let _ = std::process::Command::new(&client.bin)
+                .args(["plugin", "pane", "open", "--plugin", "herdr.theme-switcher", "--entrypoint", entrypoint])
+                .status();
+        }
+        "open-settings" => {
+            let entrypoint = if cfg!(windows) { "settings-win" } else { "settings" };
+            let client = shared::client::HerdrClient::new();
+            let _ = std::process::Command::new(&client.bin)
+                .args(["plugin", "pane", "open", "--plugin", "herdr.theme-switcher", "--entrypoint", entrypoint])
+                .status();
+        }
         "settings-tui" | "config-tui" => slices::picker::run_popup(slices::picker::state::ActiveTab::Settings)?,
         "solar-tui" => slices::picker::run_popup(slices::picker::state::ActiveTab::Solar)?,
         "apply" | "set" => {

@@ -53,6 +53,34 @@ command = ["target/release/herdr_theme-switcher.exe", "settings-tui"]
 platforms = ["windows"]
 
 [[actions]]
+id = "open-popup"
+title = "Open Herdr Theme Switcher Popup"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher", "open-popup"]
+platforms = ["linux", "macos"]
+
+[[actions]]
+id = "open-popup-win"
+title = "Open Herdr Theme Switcher Popup"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher.exe", "open-popup"]
+platforms = ["windows"]
+
+[[actions]]
+id = "open-settings"
+title = "Open Herdr Theme Settings Popup"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher", "open-settings"]
+platforms = ["linux", "macos"]
+
+[[actions]]
+id = "open-settings-win"
+title = "Open Herdr Theme Settings Popup"
+contexts = ["workspace"]
+command = ["target/release/herdr_theme-switcher.exe", "open-settings"]
+platforms = ["windows"]
+
+[[actions]]
 id = "toggle"
 title = "Toggle Light/Dark Theme"
 contexts = ["workspace"]

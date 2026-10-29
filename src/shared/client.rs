@@ -2,7 +2,7 @@ use std::env;
 use std::process::Command;
 
 pub struct HerdrClient {
-    bin: String,
+    pub bin: String,
 }
 
 impl HerdrClient {
